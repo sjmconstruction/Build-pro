@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#0f766e">
 <link rel="manifest" href="manifest.webmanifest">
 <title>BuildPro</title>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f3f6f8;color:#17202a}
@@ -22,7 +21,9 @@ main{padding:15px;max-width:800px;margin:auto}
 .stat{padding:15px;border-radius:12px;background:#ecfdf5}
 .stat b{display:block;font-size:22px;margin-top:5px}
 input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:9px;margin:5px 0 10px;font-size:15px}
+textarea{min-height:80px;resize:vertical}
 button.primary{background:#0f766e;color:white;border:0;padding:12px 18px;border-radius:9px;font-weight:bold}
+button.secondary{background:#e6fffa;color:#0f766e;border:1px solid #99d8cc;padding:10px 14px;border-radius:9px;font-weight:bold}
 button.danger{background:#dc2626;color:white;border:0;padding:7px 10px;border-radius:7px}
 .item{border-bottom:1px solid #eee;padding:12px 0}
 .item:last-child{border:0}
@@ -31,11 +32,15 @@ button.danger{background:#dc2626;color:white;border:0;padding:7px 10px;border-ra
 .hidden{display:none}
 h2{margin-top:5px}
 .empty{text-align:center;color:#888;padding:25px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#ecfdf5;color:#0f766e;font-size:12px;font-weight:bold}
+.progress{height:9px;background:#e5e7eb;border-radius:10px;overflow:hidden;margin:8px 0}
+.progress>span{display:block;height:100%;background:#0f766e}
+.project-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+@media(max-width:520px){.row{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
-
 <body>
-
 <header>
 <h1>🏗️ BuildPro</h1>
 <p>Personal Construction Management</p>
@@ -52,7 +57,6 @@ h2{margin-top:5px}
 
 <main>
 
-<!-- DASHBOARD -->
 <section id="dashboard">
 <div class="card">
 <h2>📊 Dashboard</h2>
@@ -63,22 +67,43 @@ h2{margin-top:5px}
 <div class="stat">Payments<b id="paymentTotal">₹0</b></div>
 </div>
 </div>
-
 <div class="card">
 <h3>Current Projects</h3>
 <div id="dashboardProjects"></div>
 </div>
 </section>
 
-
-<!-- PROJECTS -->
 <section id="projects" class="hidden">
 <div class="card">
 <h2>🏠 Add Project</h2>
-<input id="pname" placeholder="Project name">
-<input id="psize" placeholder="Plot / Building size e.g. 33 x 60">
-<input id="pbudget" type="number" placeholder="Budget ₹">
-<button class="primary" onclick="addProject()">Add Project</button>
+<input id="pname" placeholder="Project name *">
+<div class="row">
+<div><input id="pclient" placeholder="Client name"></div>
+<div><input id="pmobile" type="tel" placeholder="Client mobile"></div>
+</div>
+<input id="paddress" placeholder="Site address">
+<div class="row">
+<div><input id="ptype" placeholder="Building type e.g. House / Dining Hall"></div>
+<div><input id="psize" placeholder="Built-up / plot size e.g. 33 x 60"></div>
+</div>
+<div class="row">
+<div><input id="pbudget" type="number" placeholder="Contract / Budget ₹"></div>
+<div>
+<select id="pstatus">
+<option value="Planning">Planning</option>
+<option value="Ongoing">Ongoing</option>
+<option value="On Hold">On Hold</option>
+<option value="Completed">Completed</option>
+</select>
+</div>
+</div>
+<div class="row">
+<div><label class="small">Start date</label><input id="pstart" type="date"></div>
+<div><label class="small">Expected completion</label><input id="pend" type="date"></div>
+</div>
+<label class="small">Initial progress %</label>
+<input id="pprogress" type="number" min="0" max="100" value="0" placeholder="0">
+<button class="primary" onclick="addProject()">➕ Add Project</button>
 </div>
 
 <div class="card">
@@ -87,320 +112,147 @@ h2{margin-top:5px}
 </div>
 </section>
 
-
-<!-- BOQ -->
 <section id="boq" class="hidden">
 <div class="card">
 <h2>📋 BOQ / Estimation</h2>
-
 <select id="boqProject"></select>
 <input id="boqItem" placeholder="Item e.g. PCC, Footing, Brickwork">
 <input id="boqQty" type="number" placeholder="Quantity">
 <input id="boqRate" type="number" placeholder="Rate ₹">
 <button class="primary" onclick="addBOQ()">Add BOQ Item</button>
 </div>
-
-<div class="card">
-<h3>BOQ Items</h3>
-<div id="boqList"></div>
-</div>
+<div class="card"><h3>BOQ Items</h3><div id="boqList"></div></div>
 </section>
 
-
-<!-- EXPENSES -->
 <section id="expenses" class="hidden">
 <div class="card">
 <h2>💰 Expenses</h2>
-
 <select id="expenseProject"></select>
 <input id="expenseItem" placeholder="Expense description">
 <input id="expenseAmount" type="number" placeholder="Amount ₹">
 <input id="expenseDate" type="date">
 <button class="primary" onclick="addExpense()">Add Expense</button>
 </div>
-
-<div class="card">
-<h3>Expense List</h3>
-<div id="expenseList"></div>
-</div>
+<div class="card"><h3>Expense List</h3><div id="expenseList"></div></div>
 </section>
 
-
-<!-- PAYMENTS -->
 <section id="payments" class="hidden">
 <div class="card">
 <h2>💵 Client Payments</h2>
-
 <select id="paymentProject"></select>
 <input id="paymentAmount" type="number" placeholder="Payment amount ₹">
 <input id="paymentNote" placeholder="Payment note">
 <input id="paymentDate" type="date">
 <button class="primary" onclick="addPayment()">Add Payment</button>
 </div>
-
-<div class="card">
-<h3>Payment History</h3>
-<div id="paymentList"></div>
-</div>
+<div class="card"><h3>Payment History</h3><div id="paymentList"></div></div>
 </section>
 
-
-<!-- DAILY REPORT -->
 <section id="daily" class="hidden">
 <div class="card">
 <h2>📝 Daily Site Report</h2>
-
 <select id="dailyProject"></select>
 <input id="dailyDate" type="date">
 <input id="dailyWork" placeholder="Today's work">
 <input id="dailyLabour" type="number" placeholder="Labour count">
 <input id="dailyMaterial" placeholder="Material used">
-<input id="dailyProgress" type="number" placeholder="Progress %">
+<input id="dailyProgress" type="number" min="0" max="100" placeholder="Progress %">
 <textarea id="dailyNote" placeholder="Site remarks"></textarea>
-
 <button class="primary" onclick="addDaily()">Save Daily Report</button>
 </div>
-
-<div class="card">
-<h3>Daily Reports</h3>
-<div id="dailyList"></div>
-</div>
+<div class="card"><h3>Daily Reports</h3><div id="dailyList"></div></div>
 </section>
 
 </main>
 
 <script>
 const KEY="BUILDPRO_DATA";
-
 let data=JSON.parse(localStorage.getItem(KEY)||'{"projects":[],"boq":[],"expenses":[],"payments":[],"daily":[]}');
+if(!data.projects)data.projects=[]; if(!data.boq)data.boq=[]; if(!data.expenses)data.expenses=[]; if(!data.payments)data.payments=[]; if(!data.daily)data.daily=[];
 
-function save(){
-localStorage.setItem(KEY,JSON.stringify(data));
-render();
-}
-
-function money(n){
-return "₹"+Number(n||0).toLocaleString("en-IN");
-}
-
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function money(n){return "₹"+Number(n||0).toLocaleString("en-IN")}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function show(id,btn){
 document.querySelectorAll("main>section").forEach(x=>x.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
 document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
-if(btn)btn.classList.add("active");
-render();
+if(btn)btn.classList.add("active"); render();
 }
-
 function addProject(){
 let name=document.getElementById("pname").value.trim();
 if(!name)return alert("Project name enter pannunga");
-
+let progress=Math.min(100,Math.max(0,Number(document.getElementById("pprogress").value)||0));
 data.projects.push({
-id:Date.now(),
-name:name,
-size:document.getElementById("psize").value,
-budget:Number(document.getElementById("pbudget").value)||0
+id:Date.now(),name,
+client:document.getElementById("pclient").value.trim(),
+mobile:document.getElementById("pmobile").value.trim(),
+address:document.getElementById("paddress").value.trim(),
+type:document.getElementById("ptype").value.trim(),
+size:document.getElementById("psize").value.trim(),
+budget:Number(document.getElementById("pbudget").value)||0,
+status:document.getElementById("pstatus").value,
+start:document.getElementById("pstart").value,
+end:document.getElementById("pend").value,
+progress
 });
-
-document.getElementById("pname").value="";
-document.getElementById("psize").value="";
-document.getElementById("pbudget").value="";
-save();
-alert("Project added!");
+["pname","pclient","pmobile","paddress","ptype","psize","pbudget","pstart","pend"].forEach(id=>document.getElementById(id).value="");
+document.getElementById("pprogress").value=0; document.getElementById("pstatus").value="Planning";
+save(); alert("Project added!");
 }
-
 function addBOQ(){
-let project=Number(document.getElementById("boqProject").value);
-let item=document.getElementById("boqItem").value.trim();
-let qty=Number(document.getElementById("boqQty").value);
-let rate=Number(document.getElementById("boqRate").value);
-
+let project=Number(document.getElementById("boqProject").value),item=document.getElementById("boqItem").value.trim(),qty=Number(document.getElementById("boqQty").value),rate=Number(document.getElementById("boqRate").value);
 if(!project||!item)return alert("Project and item enter pannunga");
-
-data.boq.push({
-id:Date.now(),project,item,qty,rate,total:qty*rate
-});
-
-document.getElementById("boqItem").value="";
-document.getElementById("boqQty").value="";
-document.getElementById("boqRate").value="";
-save();
+data.boq.push({id:Date.now(),project,item,qty,rate,total:qty*rate});
+document.getElementById("boqItem").value="";document.getElementById("boqQty").value="";document.getElementById("boqRate").value="";save();
 }
-
 function addExpense(){
-let project=Number(document.getElementById("expenseProject").value);
-let item=document.getElementById("expenseItem").value;
-let amount=Number(document.getElementById("expenseAmount").value);
-let date=document.getElementById("expenseDate").value;
-
+let project=Number(document.getElementById("expenseProject").value),item=document.getElementById("expenseItem").value,amount=Number(document.getElementById("expenseAmount").value),date=document.getElementById("expenseDate").value;
 if(!project||!amount)return alert("Project and amount enter pannunga");
-
-data.expenses.push({id:Date.now(),project,item,amount,date});
-document.getElementById("expenseItem").value="";
-document.getElementById("expenseAmount").value="";
-save();
+data.expenses.push({id:Date.now(),project,item,amount,date});document.getElementById("expenseItem").value="";document.getElementById("expenseAmount").value="";save();
 }
-
 function addPayment(){
-let project=Number(document.getElementById("paymentProject").value);
-let amount=Number(document.getElementById("paymentAmount").value);
-let note=document.getElementById("paymentNote").value;
-let date=document.getElementById("paymentDate").value;
-
+let project=Number(document.getElementById("paymentProject").value),amount=Number(document.getElementById("paymentAmount").value),note=document.getElementById("paymentNote").value,date=document.getElementById("paymentDate").value;
 if(!project||!amount)return alert("Project and amount enter pannunga");
-
-data.payments.push({id:Date.now(),project,amount,note,date});
-document.getElementById("paymentAmount").value="";
-document.getElementById("paymentNote").value="";
-save();
+data.payments.push({id:Date.now(),project,amount,note,date});document.getElementById("paymentAmount").value="";document.getElementById("paymentNote").value="";save();
 }
-
 function addDaily(){
-let project=Number(document.getElementById("dailyProject").value);
-let date=document.getElementById("dailyDate").value;
-let work=document.getElementById("dailyWork").value;
-let labour=document.getElementById("dailyLabour").value;
-let material=document.getElementById("dailyMaterial").value;
-let progress=document.getElementById("dailyProgress").value;
-let note=document.getElementById("dailyNote").value;
-
+let project=Number(document.getElementById("dailyProject").value),date=document.getElementById("dailyDate").value,work=document.getElementById("dailyWork").value,labour=document.getElementById("dailyLabour").value,material=document.getElementById("dailyMaterial").value,progress=document.getElementById("dailyProgress").value,note=document.getElementById("dailyNote").value;
 if(!project||!work)return alert("Project and work enter pannunga");
-
-data.daily.push({
-id:Date.now(),project,date,work,labour,material,progress,note
-});
-
-document.getElementById("dailyWork").value="";
-document.getElementById("dailyLabour").value="";
-document.getElementById("dailyMaterial").value="";
-document.getElementById("dailyProgress").value="";
-document.getElementById("dailyNote").value="";
-save();
+data.daily.push({id:Date.now(),project,date,work,labour,material,progress,note});document.getElementById("dailyWork").value="";document.getElementById("dailyLabour").value="";document.getElementById("dailyMaterial").value="";document.getElementById("dailyProgress").value="";document.getElementById("dailyNote").value="";save();
 }
-
-function projectName(id){
-let p=data.projects.find(x=>x.id==id);
-return p?p.name:"Unknown";
-}
-
-function removeItem(type,id){
-if(!confirm("Delete this item?"))return;
-data[type]=data[type].filter(x=>x.id!=id);
-save();
-}
-
-function projectOptions(id){
-let el=document.getElementById(id);
-if(!el)return;
-
-el.innerHTML='<option value="">Select Project</option>'+
-data.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
-}
-
+function projectName(id){let p=data.projects.find(x=>x.id==id);return p?p.name:"Unknown"}
+function removeItem(type,id){if(!confirm("Delete this item?"))return;data[type]=data[type].filter(x=>x.id!=id);save()}
+function projectOptions(id){let el=document.getElementById(id);if(!el)return;let old=el.value;el.innerHTML='<option value="">Select Project</option>'+data.projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");if(data.projects.some(p=>String(p.id)===old))el.value=old}
 function render(){
-
 document.getElementById("projectCount").innerText=data.projects.length;
+document.getElementById("boqTotal").innerText=money(data.boq.reduce((s,x)=>s+Number(x.total||0),0));
+document.getElementById("expenseTotal").innerText=money(data.expenses.reduce((s,x)=>s+Number(x.amount||0),0));
+document.getElementById("paymentTotal").innerText=money(data.payments.reduce((s,x)=>s+Number(x.amount||0),0));
 
-let boqTotal=data.boq.reduce((s,x)=>s+x.total,0);
-let expenseTotal=data.expenses.reduce((s,x)=>s+x.amount,0);
-let paymentTotal=data.payments.reduce((s,x)=>s+x.amount,0);
-
-document.getElementById("boqTotal").innerText=money(boqTotal);
-document.getElementById("expenseTotal").innerText=money(expenseTotal);
-document.getElementById("paymentTotal").innerText=money(paymentTotal);
-
-
-/* PROJECTS */
-
-document.getElementById("projectList").innerHTML=data.projects.length?
-data.projects.map(p=>{
-let boq=data.boq.filter(x=>x.project==p.id).reduce((s,x)=>s+x.total,0);
-let exp=data.expenses.filter(x=>x.project==p.id).reduce((s,x)=>s+x.amount,0);
-let pay=data.payments.filter(x=>x.project==p.id).reduce((s,x)=>s+x.amount,0);
-
-return `
-<div class="item">
-<b>${p.name}</b>
-<div class="small">${p.size||""}</div>
+document.getElementById("projectList").innerHTML=data.projects.length?data.projects.slice().reverse().map(p=>{
+let boq=data.boq.filter(x=>x.project==p.id).reduce((s,x)=>s+Number(x.total||0),0),exp=data.expenses.filter(x=>x.project==p.id).reduce((s,x)=>s+Number(x.amount||0),0),pay=data.payments.filter(x=>x.project==p.id).reduce((s,x)=>s+Number(x.amount||0),0);
+let progress=Math.min(100,Math.max(0,Number(p.progress)||0));
+return `<div class="item">
+<div class="project-head"><div><b>${esc(p.name)}</b><div class="small">${esc(p.type||"")} ${p.size?"• "+esc(p.size):""}</div></div><span class="badge">${esc(p.status||"Planning")}</span></div>
+${p.client?`<div class="small">Client: ${esc(p.client)}${p.mobile?" • "+esc(p.mobile):""}</div>`:""}
+${p.address?`<div class="small">Site: ${esc(p.address)}</div>`:""}
+<div class="progress"><span style="width:${progress}%"></span></div>
+<div class="small">Progress: ${progress}% ${p.end?"• Due: "+esc(p.end):""}</div>
 <div>Budget: <span class="money">${money(p.budget)}</span></div>
-<div>BOQ: ${money(boq)} | Expense: ${money(exp)}</div>
-<div>Payment: ${money(pay)}</div>
-<br>
-<button class="danger" onclick="removeItem('projects',${p.id})">Delete</button>
-</div>`;
-}).join(""):'<div class="empty">No projects yet</div>';
+<div>BOQ: ${money(boq)} | Expense: ${money(exp)} | Payment: ${money(pay)}</div>
+<br><button class="danger" onclick="removeItem('projects',${p.id})">Delete</button>
+</div>`}).join(""):'<div class="empty">No projects yet</div>';
 
+document.getElementById("dashboardProjects").innerHTML=data.projects.length?data.projects.slice().reverse().map(p=>`<div class="item"><div class="project-head"><b>${esc(p.name)}</b><span class="badge">${esc(p.status||"Planning")}</span></div><div class="small">Budget ${money(p.budget)} | Progress ${Number(p.progress)||0}%</div><div class="progress"><span style="width:${Math.min(100,Math.max(0,Number(p.progress)||0))}%"></span></div></div>`).join(""):'<div class="empty">Add your first project</div>';
 
-/* DASHBOARD PROJECTS */
-
-document.getElementById("dashboardProjects").innerHTML=data.projects.length?
-data.projects.map(p=>{
-let exp=data.expenses.filter(x=>x.project==p.id).reduce((s,x)=>s+x.amount,0);
-return `<div class="item"><b>${p.name}</b><br>
-<span class="small">Budget ${money(p.budget)} | Spent ${money(exp)}</span>
-</div>`;
-}).join(""):'<div class="empty">Add your first project</div>';
-
-
-/* BOQ */
-
-document.getElementById("boqList").innerHTML=data.boq.length?
-data.boq.slice().reverse().map(x=>`
-<div class="item">
-<b>${x.item}</b><br>
-<span class="small">${projectName(x.project)} | ${x.qty} × ${money(x.rate)}</span>
-<br><span class="money">${money(x.total)}</span>
-<button class="danger" onclick="removeItem('boq',${x.id})">Delete</button>
-</div>`).join(""):'<div class="empty">No BOQ items</div>';
-
-
-/* EXPENSES */
-
-document.getElementById("expenseList").innerHTML=data.expenses.length?
-data.expenses.slice().reverse().map(x=>`
-<div class="item">
-<b>${x.item||"Expense"}</b><br>
-<span class="small">${projectName(x.project)} | ${x.date||""}</span><br>
-<span class="money">${money(x.amount)}</span>
-<button class="danger" onclick="removeItem('expenses',${x.id})">Delete</button>
-</div>`).join(""):'<div class="empty">No expenses</div>';
-
-
-/* PAYMENTS */
-
-document.getElementById("paymentList").innerHTML=data.payments.length?
-data.payments.slice().reverse().map(x=>`
-<div class="item">
-<b>${money(x.amount)}</b><br>
-<span class="small">${projectName(x.project)} | ${x.date||""}</span>
-<div>${x.note||""}</div>
-<button class="danger" onclick="removeItem('payments',${x.id})">Delete</button>
-</div>`).join(""):'<div class="empty">No payments</div>';
-
-
-/* DAILY */
-
-document.getElementById("dailyList").innerHTML=data.daily.length?
-data.daily.slice().reverse().map(x=>`
-<div class="item">
-<b>${projectName(x.project)}</b> — ${x.date||""}<br>
-<strong>${x.work}</strong>
-<div class="small">
-Labour: ${x.labour||0} |
-Material: ${x.material||"-"} |
-Progress: ${x.progress||0}%
-</div>
-<div>${x.note||""}</div>
-<button class="danger" onclick="removeItem('daily',${x.id})">Delete</button>
-</div>`).join(""):'<div class="empty">No daily reports</div>';
-
-
-["boqProject","expenseProject","paymentProject","dailyProject"]
-.forEach(x=>projectOptions(x));
+document.getElementById("boqList").innerHTML=data.boq.length?data.boq.slice().reverse().map(x=>`<div class="item"><b>${esc(x.item)}</b><br><span class="small">${esc(projectName(x.project))} | ${x.qty} × ${money(x.rate)}</span><br><span class="money">${money(x.total)}</span> <button class="danger" onclick="removeItem('boq',${x.id})">Delete</button></div>`).join(""):'<div class="empty">No BOQ items</div>';
+document.getElementById("expenseList").innerHTML=data.expenses.length?data.expenses.slice().reverse().map(x=>`<div class="item"><b>${esc(x.item||"Expense")}</b><br><span class="small">${esc(projectName(x.project))} | ${esc(x.date||"")}</span><br><span class="money">${money(x.amount)}</span> <button class="danger" onclick="removeItem('expenses',${x.id})">Delete</button></div>`).join(""):'<div class="empty">No expenses</div>';
+document.getElementById("paymentList").innerHTML=data.payments.length?data.payments.slice().reverse().map(x=>`<div class="item"><b>${money(x.amount)}</b><br><span class="small">${esc(projectName(x.project))} | ${esc(x.date||"")}</span><div>${esc(x.note||"")}</div><button class="danger" onclick="removeItem('payments',${x.id})">Delete</button></div>`).join(""):'<div class="empty">No payments</div>';
+document.getElementById("dailyList").innerHTML=data.daily.length?data.daily.slice().reverse().map(x=>`<div class="item"><b>${esc(projectName(x.project))}</b> — ${esc(x.date||"")}<br><strong>${esc(x.work)}</strong><div class="small">Labour: ${esc(x.labour||0)} | Material: ${esc(x.material||"-")} | Progress: ${esc(x.progress||0)}%</div><div>${esc(x.note||"")}</div><button class="danger" onclick="removeItem('daily',${x.id})">Delete</button></div>`).join(""):'<div class="empty">No daily reports</div>';
+["boqProject","expenseProject","paymentProject","dailyProject"].forEach(projectOptions);
 }
-
 render();
 </script>
-
 </body>
 </html>
