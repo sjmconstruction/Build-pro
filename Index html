@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<title>BuildPro</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6f8;color:#17202a}
+header{background:#0f766e;color:white;padding:18px 16px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:24px}
+header p{margin:5px 0 0;font-size:13px;opacity:.9}
+nav{display:flex;overflow:auto;background:white;border-bottom:1px solid #ddd}
+nav button{border:0;background:white;padding:14px 15px;white-space:nowrap;font-weight:bold;color:#555}
+nav button.active{color:#0f766e;border-bottom:3px solid #0f766e}
+main{padding:15px;max-width:800px;margin:auto}
+.card{background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #00000012}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{padding:15px;border-radius:12px;background:#ecfdf5}
+.stat b{display:block;font-size:22px;margin-top:5px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:9px;margin:5px 0 10px;font-size:15px}
+button.primary{background:#0f766e;color:white;border:0;padding:12px 18px;border-radius:9px;font-weight:bold}
+button.danger{background:#dc2626;color:white;border:0;padding:7px 10px;border-radius:7px}
+.item{border-bottom:1px solid #eee;padding:12px 0}
+.item:last-child{border:0}
+.small{font-size:13px;color:#666}
+.money{font-weight:bold;color:#0f766e}
+.hidden{display:none}
+h2{margin-top:5px}
+.empty{text-align:center;color:#888;padding:25px}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🏗️ BuildPro</h1>
+<p>Personal Construction Management</p>
+</header>
+
+<nav>
+<button onclick="show('dashboard',this)" class="active">Dashboard</button>
+<button onclick="show('projects',this)">Projects</button>
+<button onclick="show('boq',this)">BOQ</button>
+<button onclick="show('expenses',this)">Expenses</button>
+<button onclick="show('payments',this)">Payments</button>
+<button onclick="show('daily',this)">Daily Report</button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+<div class="card">
+<h2>📊 Dashboard</h2>
+<div class="grid">
+<div class="stat">Projects<b id="projectCount">0</b></div>
+<div class="stat">BOQ Value<b id="boqTotal">₹0</b></div>
+<div class="stat">Expenses<b id="expenseTotal">₹0</b></div>
+<div class="stat">Payments<b id="paymentTotal">₹0</b></div>
+</div>
+</div>
+
+<div class="card">
+<h3>Current Projects</h3>
+<div id="dashboardProjects"></div>
+</div>
+</section>
+
+
+<!-- PROJECTS -->
+<section id="projects" class="hidden">
+<div class="card">
+<h2>🏠 Add Project</h2>
+<input id="pname" placeholder="Project name">
+<input id="psize" placeholder="Plot / Building size e.g. 33 x 60">
+<input id="pbudget" type="number" placeholder="Budget ₹">
+<button class="primary" onclick="addProject()">Add Project</button>
+</div>
+
+<div class="card">
+<h3>My Projects</h3>
+<div id="projectList"></div>
+</div>
+</section>
+
+
+<!-- BOQ -->
+<section id="boq" class="hidden">
+<div class="card">
+<h2>📋 BOQ / Estimation</h2>
+
+<select id="boqProject"></select>
+<input id="boqItem" placeholder="Item e.g. PCC, Footing, Brickwork">
+<input id="boqQty" type="number" placeholder="Quantity">
+<input id="boqRate" type="number" placeholder="Rate ₹">
+<button class="primary" onclick="addBOQ()">Add BOQ Item</button>
+</div>
+
+<div class="card">
+<h3>BOQ Items</h3>
+<div id="boqList"></div>
+</div>
+</section>
+
+
+<!-- EXPENSES -->
+<section id="expenses" class="hidden">
+<div class="card">
+<h2>💰 Expenses</h2>
+
+<select id="expenseProject"></select>
+<input id="expenseItem" placeholder="Expense description">
+<input id="expenseAmount" type="number" placeholder="Amount ₹">
+<input id="expenseDate" type="date">
+<button class="primary" onclick="addExpense()">Add Expense</button>
+</div>
+
+<div class="card">
+<h3>Expense List</h3>
+<div id="expenseList"></div>
+</div>
+</section>
+
+
+<!-- PAYMENTS -->
+<section id="payments" class="hidden">
+<div class="card">
+<h2>💵 Client Payments</h2>
+
+<select id="paymentProject"></select>
+<input id="paymentAmount" type="number" placeholder="Payment amount ₹">
+<input id="paymentNote" placeholder="Payment note">
+<input id="paymentDate" type="date">
+<button class="primary" onclick="addPayment()">Add Payment</button>
+</div>
+
+<div class="card">
+<h3>Payment History</h3>
+<div id="paymentList"></div>
+</div>
+</section>
+
+
+<!-- DAILY REPORT -->
+<section id="daily" class="hidden">
+<div class="card">
+<h2>📝 Daily Site Report</h2>
+
+<select id="dailyProject"></select>
+<input id="dailyDate" type="date">
+<input id="dailyWork" placeholder="Today's work">
+<input id="dailyLabour" type="number" placeholder="Labour count">
+<input id="dailyMaterial" placeholder="Material used">
+<input id="dailyProgress" type="number" placeholder="Progress %">
+<textarea id="dailyNote" placeholder="Site remarks"></textarea>
+
+<button class="primary" onclick="addDaily()">Save Daily Report</button>
+</div>
+
+<div class="card">
+<h3>Daily Reports</h3>
+<div id="dailyList"></div>
+</div>
+</section>
+
+</main>
+
+<script>
+const KEY="BUILDPRO_DATA";
+
+let data=JSON.parse(localStorage.getItem(KEY)||'{"projects":[],"boq":[],"expenses":[],"payments":[],"daily":[]}');
+
+function save(){
+localStorage.setItem(KEY,JSON.stringify(data));
+render();
+}
+
+function money(n){
+return "₹"+Number(n||0).toLocaleString("en-IN");
+}
+
+function show(id,btn){
+document.querySelectorAll("main>section").forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+if(btn)btn.classList.add("active");
+render();
+}
+
+function addProject(){
+let name=document.getElementById("pname").value.trim();
+if(!name)return alert("Project name enter pannunga");
+
+data.projects.push({
+id:Date.now(),
+name:name,
+size:document.getElementById("psize").value,
+budget:Number(document.getElementById("pbudget").value)||0
+});
+
+document.getElementById("pname").value="";
+document.getElementById("psize").value="";
+document.getElementById("pbudget").value="";
+save();
+alert("Project added!");
+}
+
+function addBOQ(){
+let project=Number(document.getElementById("boqProject").value);
+let item=document.getElementById("boqItem").value.trim();
+let qty=Number(document.getElementById("boqQty").value);
+let rate=Number(document.getElementById("boqRate").value);
+
+if(!project||!item)return alert("Project and item enter pannunga");
+
+data.boq.push({
+id:Date.now(),project,item,qty,rate,total:qty*rate
+});
+
+document.getElementById("boqItem").value="";
+document.getElementById("boqQty").value="";
+document.getElementById("boqRate").value="";
+save();
+}
+
+function addExpense(){
+let project=Number(document.getElementById("expenseProject").value);
+let item=document.getElementById("expenseItem").value;
+let amount=Number(document.getElementById("expenseAmount").value);
+let date=document.getElementById("expenseDate").value;
+
+if(!project||!amount)return alert("Project and amount enter pannunga");
+
+data.expenses.push({id:Date.now(),project,item,amount,date});
+document.getElementById("expenseItem").value="";
+document.getElementById("expenseAmount").value="";
+save();
+}
+
+function addPayment(){
+let project=Number(document.getElementById("paymentProject").value);
+let amount=Number(document.getElementById("paymentAmount").value);
+let note=document.getElementById("paymentNote").value;
+let date=document.getElementById("paymentDate").value;
+
+if(!project||!amount)return alert("Project and amount enter pannunga");
+
+data.payments.push({id:Date.now(),project,amount,note,date});
+document.getElementById("paymentAmount").value="";
+document.getElementById("paymentNote").value="";
+save();
+}
+
+function addDaily(){
+let project=Number(document.getElementById("dailyProject").value);
+let date=document.getElementById("dailyDate").value;
+let work=document.getElementById("dailyWork").value;
+let labour=document.getElementById("dailyLabour").value;
+let material=document.getElementById("dailyMaterial").value;
+let progress=document.getElementById("dailyProgress").value;
+let note=document.getElementById("dailyNote").value;
+
+if(!project||!work)return alert("Project and work enter pannunga");
+
+data.daily.push({
+id:Date.now(),project,date,work,labour,material,progress,note
+});
+
+document.getElementById("dailyWork").value="";
+document.getElementById("dailyLabour").value="";
+document.getElementById("dailyMaterial").value="";
+document.getElementById("dailyProgress").value="";
+document.getElementById("dailyNote").value="";
+save();
+}
+
+function projectName(id){
+let p=data.projects.find(x=>x.id==id);
+return p?p.name:"Unknown";
+}
+
+function removeItem(type,id){
+if(!confirm("Delete this item?"))return;
+data[type]=data[type].filter(x=>x.id!=id);
+save();
+}
+
+function projectOptions(id){
+let el=document.getElementById(id);
+if(!el)return;
+
+el.innerHTML='<option value="">Select Project</option>'+
+data.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+}
+
+function render(){
+
+document.getElementById("projectCount").innerText=data.projects.length;
+
+let boqTotal=data.boq.reduce((s,x)=>s+x.total,0);
+let expenseTotal=data.expenses.reduce((s,x)=>s+x.amount,0);
+let paymentTotal=data.payments.reduce((s,x)=>s+x.amount,0);
+
+document.getElementById("boqTotal").innerText=money(boqTotal);
+document.getElementById("expenseTotal").innerText=money(expenseTotal);
+document.getElementById("paymentTotal").innerText=money(paymentTotal);
+
+
+/* PROJECTS */
+
+document.getElementById("projectList").innerHTML=data.projects.length?
+data.projects.map(p=>{
+let boq=data.boq.filter(x=>x.project==p.id).reduce((s,x)=>s+x.total,0);
+let exp=data.expenses.filter(x=>x.project==p.id).reduce((s,x)=>s+x.amount,0);
+let pay=data.payments.filter(x=>x.project==p.id).reduce((s,x)=>s+x.amount,0);
+
+return `
+<div class="item">
+<b>${p.name}</b>
+<div class="small">${p.size||""}</div>
+<div>Budget: <span class="money">${money(p.budget)}</span></div>
+<div>BOQ: ${money(boq)} | Expense: ${money(exp)}</div>
+<div>Payment: ${money(pay)}</div>
+<br>
+<button class="danger" onclick="removeItem('projects',${p.id})">Delete</button>
+</div>`;
+}).join(""):'<div class="empty">No projects yet</div>';
+
+
+/* DASHBOARD PROJECTS */
+
+document.getElementById("dashboardProjects").innerHTML=data.projects.length?
+data.projects.map(p=>{
+let exp=data.expenses.filter(x=>x.project==p.id).reduce((s,x)=>s+x.amount,0);
+return `<div class="item"><b>${p.name}</b><br>
+<span class="small">Budget ${money(p.budget)} | Spent ${money(exp)}</span>
+</div>`;
+}).join(""):'<div class="empty">Add your first project</div>';
+
+
+/* BOQ */
+
+document.getElementById("boqList").innerHTML=data.boq.length?
+data.boq.slice().reverse().map(x=>`
+<div class="item">
+<b>${x.item}</b><br>
+<span class="small">${projectName(x.project)} | ${x.qty} × ${money(x.rate)}</span>
+<br><span class="money">${money(x.total)}</span>
+<button class="danger" onclick="removeItem('boq',${x.id})">Delete</button>
+</div>`).join(""):'<div class="empty">No BOQ items</div>';
+
+
+/* EXPENSES */
+
+document.getElementById("expenseList").innerHTML=data.expenses.length?
+data.expenses.slice().reverse().map(x=>`
+<div class="item">
+<b>${x.item||"Expense"}</b><br>
+<span class="small">${projectName(x.project)} | ${x.date||""}</span><br>
+<span class="money">${money(x.amount)}</span>
+<button class="danger" onclick="removeItem('expenses',${x.id})">Delete</button>
+</div>`).join(""):'<div class="empty">No expenses</div>';
+
+
+/* PAYMENTS */
+
+document.getElementById("paymentList").innerHTML=data.payments.length?
+data.payments.slice().reverse().map(x=>`
+<div class="item">
+<b>${money(x.amount)}</b><br>
+<span class="small">${projectName(x.project)} | ${x.date||""}</span>
+<div>${x.note||""}</div>
+<button class="danger" onclick="removeItem('payments',${x.id})">Delete</button>
+</div>`).join(""):'<div class="empty">No payments</div>';
+
+
+/* DAILY */
+
+document.getElementById("dailyList").innerHTML=data.daily.length?
+data.daily.slice().reverse().map(x=>`
+<div class="item">
+<b>${projectName(x.project)}</b> — ${x.date||""}<br>
+<strong>${x.work}</strong>
+<div class="small">
+Labour: ${x.labour||0} |
+Material: ${x.material||"-"} |
+Progress: ${x.progress||0}%
+</div>
+<div>${x.note||""}</div>
+<button class="danger" onclick="removeItem('daily',${x.id})">Delete</button>
+</div>`).join(""):'<div class="empty">No daily reports</div>';
+
+
+["boqProject","expenseProject","paymentProject","dailyProject"]
+.forEach(x=>projectOptions(x));
+}
+
+render();
+</script>
+
+</body>
+</html>
